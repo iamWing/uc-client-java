@@ -1,7 +1,7 @@
 group 'uk.co.alphaowl'
 version '0.1'
 
-apply plugin: 'java'
+apply plugin: 'java-library'
 
 sourceCompatibility = 1.8
 
