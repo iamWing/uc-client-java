@@ -10,7 +10,6 @@ public class UCClient {
     private int remotePort;
     private int localPort;
 
-
     /**
      * Default constructor.
      */
@@ -21,9 +20,9 @@ public class UCClient {
      * Constructor with predefine server IP address, and
      * port number on both server & client.
      *
-     * @param remoteAddr IPv4 address of the server.
-     * @param remotePort Port number of the server.
-     * @param localPort  Port number of the client.
+     * @param remoteAddr IPv4 address of the server
+     * @param remotePort port number of the server
+     * @param localPort  port number of the client
      */
     private UCClient(String remoteAddr, int remotePort, int localPort) {
         this.remoteAddr = remoteAddr;
@@ -35,7 +34,7 @@ public class UCClient {
      * Static initialisation method of UCClient. This
      * is the default method to initial an new instance.
      *
-     * @return An instance of UCClient.
+     * @return instance of UCClient
      */
     public static UCClient init() {
 
@@ -61,11 +60,11 @@ public class UCClient {
      * server address, and port number on both server
      * & client set.
      *
-     * @param remoteAddr IPv4 address of the server.
-     * @param remotePort Port number of the server.
-     * @param localPort  Port number of the client.
-     * @return An instance of UCClient with the
-     * parameters set.
+     * @param remoteAddr IPv4 address of the server
+     * @param remotePort port number of the server
+     * @param localPort  port number of the client
+     * @return instance of UCClient with
+     * parameters set
      */
     public static UCClient init(String remoteAddr, int remotePort,
                                 int localPort) {
@@ -77,6 +76,21 @@ public class UCClient {
         instance.localPort = localPort;
 
         return instance;
+    }
+
+    /**
+     * @return the instance that currently pointing to
+     */
+    public UCClient getInstance() {
+        return instance;
+    }
+
+    /**
+     * Reset the static instance reference to null
+     * in case there is any need for an new instance.
+     */
+    public void destroy() {
+        instance = null;
     }
 
 }
