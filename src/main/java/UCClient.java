@@ -10,6 +10,10 @@ public class UCClient {
 
     private static volatile UCClient instance;
 
+    private static final String DELIMITER = "<EOM>";
+
+    private static final String TAG_REGISTER = "Register:";
+
     private String remoteAddr;
     private int remotePort;
 
@@ -78,6 +82,8 @@ public class UCClient {
         instance.remotePort = remotePort;
 
         instance.socket = ClientSocket.init(remoteAddr, remotePort);
+        instance.socket.setOnConnectionCreatedListener(
+                () -> instance.playerRegister());
 
         return instance;
     }
@@ -105,6 +111,7 @@ public class UCClient {
             // Todo - create connection fail listener
         }
     }
+    
 
     /* Getters */
 
@@ -115,4 +122,17 @@ public class UCClient {
         return instance;
     }
 
+    /* Private methods */
+
+    /**
+     * Register the player to server.
+     */
+    private void playerRegister() {
+        try {
+            socket.writeString(TAG_REGISTER + player + DELIMITER,
+                    null);
+        } catch (IOException ex) {
+
+        }
+    }
 }
