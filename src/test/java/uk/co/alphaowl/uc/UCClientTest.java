@@ -1,3 +1,5 @@
+package uk.co.alphaowl.uc;
+
 import org.junit.After;
 import org.junit.Before;
 

@@ -1,3 +1,5 @@
+package uk.co.alphaowl.uc;
+
 import com.devtography.socket.javadotnet.ClientSocket;
 
 import java.io.IOException;
