@@ -10,5 +10,10 @@ repositories {
 }
 
 dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
+}
+
+task listJars << {
+    configurations.compile.each { File file -> println file.name }
 }
