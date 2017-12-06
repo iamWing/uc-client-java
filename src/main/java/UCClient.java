@@ -79,18 +79,20 @@ public class UCClient {
     }
 
     /**
-     * @return the instance that currently pointing to
-     */
-    public UCClient getInstance() {
-        return instance;
-    }
-
-    /**
      * Reset the static instance reference to null
      * in case there is any need for an new instance.
      */
     public void destroy() {
         instance = null;
+    }
+
+    /* Getters */
+
+    /**
+     * @return the instance that currently pointing to
+     */
+    public UCClient getInstance() {
+        return instance;
     }
 
 }
