@@ -73,6 +73,8 @@ public class UCClient {
         instance.remoteAddr = remoteAddr;
         instance.remotePort = remotePort;
 
+        instance.socket = ClientSocket.init(remoteAddr, remotePort);
+
         return instance;
     }
 
