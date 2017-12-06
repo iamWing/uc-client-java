@@ -160,6 +160,20 @@ public class UCClient {
         return instance;
     }
 
+    /**
+     * @return the IPv4 address of the server connected
+     */
+    public String getRemoteAddr() {
+        return remoteAddr;
+    }
+
+    /**
+     * @return the port number of the server connected
+     */
+    public int getRemotePort() {
+        return remotePort;
+    }
+
     /* Private methods */
 
     /**
