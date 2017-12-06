@@ -1,5 +1,7 @@
 import com.devtography.socket.javadotnet.ClientSocket;
 
+import java.io.IOException;
+
 /**
  * Public client class of the Universal Controller
  * library. Provides APIs access of the library.
@@ -12,6 +14,8 @@ public class UCClient {
     private int remotePort;
 
     private ClientSocket socket;
+
+    private String player;
 
     /**
      * Default constructor.
@@ -84,6 +88,22 @@ public class UCClient {
      */
     public void destroy() {
         instance = null;
+    }
+
+    /**
+     * Connects to socket server.
+     *
+     * @param player name of the player.
+     */
+    public void connect(String player) {
+
+        this.player = player;
+
+        try {
+            socket.connect();
+        } catch (IOException ex) {
+            // Todo - create connection fail listener
+        }
     }
 
     /* Getters */
