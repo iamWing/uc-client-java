@@ -1,3 +1,5 @@
+import com.devtography.socket.javadotnet.ClientSocket;
+
 /**
  * Public client class of the Universal Controller
  * library. Provides APIs access of the library.
@@ -8,7 +10,8 @@ public class UCClient {
 
     private String remoteAddr;
     private int remotePort;
-    private int localPort;
+
+    private ClientSocket socket;
 
     /**
      * Default constructor.
@@ -17,17 +20,15 @@ public class UCClient {
     }
 
     /**
-     * Constructor with predefine server IP address, and
-     * port number on both server & client.
+     * Constructor with predefine server IP address &
+     * port number.
      *
      * @param remoteAddr IPv4 address of the server
      * @param remotePort port number of the server
-     * @param localPort  port number of the client
      */
-    private UCClient(String remoteAddr, int remotePort, int localPort) {
+    private UCClient(final String remoteAddr, final int remotePort) {
         this.remoteAddr = remoteAddr;
         this.remotePort = remotePort;
-        this.localPort = localPort;
     }
 
     /**
@@ -57,23 +58,20 @@ public class UCClient {
 
     /**
      * Alternative static init method of UCClient with
-     * server address, and port number on both server
-     * & client set.
+     * server address & port number.
      *
      * @param remoteAddr IPv4 address of the server
      * @param remotePort port number of the server
-     * @param localPort  port number of the client
      * @return instance of UCClient with
      * parameters set
      */
-    public static UCClient init(String remoteAddr, int remotePort,
-                                int localPort) {
+    public static UCClient init(final String remoteAddr,
+                                final int remotePort) {
 
         init();
 
         instance.remoteAddr = remoteAddr;
         instance.remotePort = remotePort;
-        instance.localPort = localPort;
 
         return instance;
     }
