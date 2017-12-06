@@ -11,8 +11,12 @@ public class UCClient {
     private static volatile UCClient instance;
 
     private static final String DELIMITER = "<EOM>";
+    private static final String SEPARATOR = ";";
 
     private static final String TAG_REGISTER = "Register:";
+    private static final String TAG_DEREGISTER = "Deregister:";
+    private static final String TAG_PLAYER = "Player:";
+    private static final String TAG_KEYDOWN = "KeyDown:";
 
     private String remoteAddr;
     private int remotePort;
@@ -111,7 +115,39 @@ public class UCClient {
             // Todo - create connection fail listener
         }
     }
-    
+
+    /**
+     * Deregisters the player from server and closes
+     * the connection.
+     */
+    public void disconnect() {
+        try {
+            socket.writeString(TAG_DEREGISTER + player + DELIMITER,
+                    null);
+            socket.disconnect();
+        } catch (IOException ex) {
+
+        }
+    }
+
+    /**
+     * Sends a key down action to the server.
+     *
+     * @param key identifier of the key/button
+     */
+    public void keyDown(String key) {
+
+        StringBuilder msg = new StringBuilder();
+        msg.append(TAG_PLAYER).append(player).append(SEPARATOR);
+        msg.append(TAG_KEYDOWN).append(key);
+        msg.append(DELIMITER);
+
+        try {
+            socket.writeString(msg.toString(), null);
+        } catch (IOException ioe) {
+
+        }
+    }
 
     /* Getters */
 
