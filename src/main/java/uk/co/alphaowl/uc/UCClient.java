@@ -12,14 +12,6 @@ public class UCClient {
 
     private static volatile UCClient instance;
 
-    private static final String DELIMITER = "<EOM>";
-    private static final String SEPARATOR = ";";
-
-    private static final String TAG_REGISTER = "Register:";
-    private static final String TAG_DEREGISTER = "Deregister:";
-    private static final String TAG_PLAYER = "Player:";
-    private static final String TAG_KEYDOWN = "KeyDown:";
-
     private String remoteAddr;
     private int remotePort;
 
@@ -30,8 +22,7 @@ public class UCClient {
     /**
      * Default constructor.
      */
-    private UCClient() {
-    }
+    private UCClient() { }
 
     /**
      * Constructor with predefine server IP address &
@@ -88,8 +79,6 @@ public class UCClient {
         instance.remotePort = remotePort;
 
         instance.socket = ClientSocket.init(remoteAddr, remotePort);
-        instance.socket.setOnConnectionCreatedListener(
-                () -> instance.playerRegister());
 
         return instance;
     }
@@ -104,32 +93,19 @@ public class UCClient {
 
     /**
      * Connects to socket server.
-     *
-     * @param player name of the player.
      */
-    public void connect(String player) {
+    public void connect() throws IOException {
 
-        this.player = player;
-
-        try {
-            socket.connect();
-        } catch (IOException ex) {
-            // Todo - create connection fail listener
-        }
+        socket.connect();
     }
 
     /**
      * Deregisters the player from server and closes
      * the connection.
      */
-    public void disconnect() {
-        try {
-            socket.writeString(TAG_DEREGISTER + player + DELIMITER,
-                    null);
-            socket.disconnect();
-        } catch (IOException ex) {
+    public void disconnect() throws IOException {
 
-        }
+        socket.disconnect();
     }
 
     /**
@@ -137,18 +113,11 @@ public class UCClient {
      *
      * @param key identifier of the key/button
      */
-    public void keyDown(String key) {
+    public void keyDown(String key) throws IOException {
 
         StringBuilder msg = new StringBuilder();
-        msg.append(TAG_PLAYER).append(player).append(SEPARATOR);
-        msg.append(TAG_KEYDOWN).append(key);
-        msg.append(DELIMITER);
 
-        try {
-            socket.writeString(msg.toString(), null);
-        } catch (IOException ioe) {
-
-        }
+        socket.writeString(msg.toString(), null);
     }
 
     /* Getters */
@@ -172,19 +141,5 @@ public class UCClient {
      */
     public int getRemotePort() {
         return remotePort;
-    }
-
-    /* Private methods */
-
-    /**
-     * Register the player to server.
-     */
-    private void playerRegister() {
-        try {
-            socket.writeString(TAG_REGISTER + player + DELIMITER,
-                    null);
-        } catch (IOException ex) {
-
-        }
     }
 }
