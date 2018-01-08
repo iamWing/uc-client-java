@@ -12,6 +12,8 @@ public class UCClient {
 
     private static volatile UCClient instance;
 
+    private boolean isRunning = false;
+
     private String remoteAddr;
     private int remotePort;
 
@@ -22,7 +24,8 @@ public class UCClient {
     /**
      * Default constructor.
      */
-    private UCClient() { }
+    private UCClient() {
+    }
 
     /**
      * Constructor with predefine server IP address &
@@ -71,14 +74,11 @@ public class UCClient {
      * parameters set
      */
     public static UCClient init(final String remoteAddr,
-                                final int remotePort) {
+                                final int remotePort) throws IOException {
 
         init();
 
-        instance.remoteAddr = remoteAddr;
-        instance.remotePort = remotePort;
-
-        instance.socket = ClientSocket.init(remoteAddr, remotePort);
+        instance.connect(remoteAddr, remotePort);
 
         return instance;
     }
@@ -92,20 +92,45 @@ public class UCClient {
     }
 
     /**
-     * Connects to socket server.
+     * Connects to the server with host's IP address
+     * and port number provided.
+     *
+     * @param remoteAddr host's IP address.
+     * @param remotePort port number.
+     * @throws IOException if an I/O error occurs when
+     *                     connecting to the server.
      */
-    public void connect() throws IOException {
+    public void connect(final String remoteAddr, final int remotePort)
+            throws IOException {
+        if (!isRunning) {
+            isRunning = true;
 
-        socket.connect();
+            this.remoteAddr = remoteAddr;
+            this.remotePort = remotePort;
+
+            try {
+                socket = ClientSocket.init(remoteAddr, remotePort);
+                socket.setOnConnectionCreatedListener(this::onConnected);
+                socket.setOnReadStringCompleteListener(this::onMsgReceived);
+                socket.connect();
+            } catch (IOException ex) {
+                isRunning = false;
+
+                throw ex;
+            }
+        }
     }
 
+
     /**
-     * Deregisters the player from server and closes
+     * Deregister the player from server and closes
      * the connection.
      */
     public void disconnect() throws IOException {
 
         socket.disconnect();
+
+        isRunning = false;
     }
 
     /**
@@ -141,5 +166,15 @@ public class UCClient {
      */
     public int getRemotePort() {
         return remotePort;
+    }
+
+    /* Private methods */
+
+    private void onConnected() {
+
+    }
+
+    private void onMsgReceived(String msg) {
+
     }
 }
