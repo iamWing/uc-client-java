@@ -2,6 +2,7 @@ package uk.co.alphaowl.uc;
 
 import com.devtography.socket.javadotnet.ClientSocket;
 import com.sun.istack.internal.Nullable;
+import uk.co.alphaowl.uc.exceptions.PlayerNotRegisteredException;
 
 import java.io.IOException;
 
@@ -24,7 +25,7 @@ public class UCClient {
     private IUCCallbacks callback;
 
     private String player;
-    private int playerId;
+    private int playerId = -1;
 
     /**
      * Default constructor.
@@ -150,13 +151,30 @@ public class UCClient {
     /**
      * Sends a key down action to the server.
      *
-     * @param key identifier of the key/button
+     * @param key   identifier of the key/button
+     * @param extra optional extra content
+     * @throws PlayerNotRegisteredException if there is no
+     *                                      player ID received from the server yet.
      */
-    public void keyDown(String key) throws IOException {
+    public void keyDown(String key, @Nullable String extra)
+            throws PlayerNotRegisteredException {
 
-        StringBuilder msg = new StringBuilder();
+        if (playerId != -1) {
+            String cmd;
 
-        socket.writeString(msg.toString(), null);
+            if (extra != null)
+                cmd = UCCommand.keyDownCmd(playerId,
+                        new String[]{key, extra});
+            else cmd = UCCommand.keyDownCmd(playerId, new String[]{key});
+
+            try {
+                socket.writeString(cmd, null);
+            } catch (IOException ex) {
+                callback.onServerDisconnected();
+            }
+        } else {
+            throw new PlayerNotRegisteredException();
+        }
     }
 
     /* Getters */
@@ -209,7 +227,7 @@ public class UCClient {
             case 1:
                 switch (decodedString[0]) {
                     case UCCommand.SERVER_SHUTDOWN:
-                        callback.onServerShuttedDown();
+                        callback.onServerDisconnected();
                         break;
                     case UCCommand.PLAYER_NOT_FOUND:
                         callback.onPlayerNotFound();

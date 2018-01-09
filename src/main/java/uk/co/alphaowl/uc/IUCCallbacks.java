@@ -1,7 +1,7 @@
 package uk.co.alphaowl.uc;
 
 public interface IUCCallbacks {
-    void onServerShuttedDown();
+    void onServerDisconnected();
     void onPlayerNotFound();
     void invalidCmd();
 }
