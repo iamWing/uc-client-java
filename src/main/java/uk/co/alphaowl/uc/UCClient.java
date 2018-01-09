@@ -1,6 +1,9 @@
 package uk.co.alphaowl.uc;
 
 import com.devtography.socket.javadotnet.ClientSocket;
+import org.jetbrains.annotations.Nullable;
+import uk.co.alphaowl.uc.exceptions.PlayerNotRegisteredException;
+import uk.co.alphaowl.uc.exceptions.PlayerRegisteredException;
 
 import java.io.IOException;
 
@@ -12,37 +15,23 @@ public class UCClient {
 
     private static volatile UCClient instance;
 
-    private static final String DELIMITER = "<EOM>";
-    private static final String SEPARATOR = ";";
-
-    private static final String TAG_REGISTER = "Register:";
-    private static final String TAG_DEREGISTER = "Deregister:";
-    private static final String TAG_PLAYER = "Player:";
-    private static final String TAG_KEYDOWN = "KeyDown:";
+    private volatile boolean isRunning = false;
 
     private String remoteAddr;
     private int remotePort;
+    private int bufferSize = 1024;
 
     private ClientSocket socket;
 
+    private IUCCallbacks callback;
+
     private String player;
+    private int playerId = -1;
 
     /**
      * Default constructor.
      */
     private UCClient() {
-    }
-
-    /**
-     * Constructor with predefine server IP address &
-     * port number.
-     *
-     * @param remoteAddr IPv4 address of the server
-     * @param remotePort port number of the server
-     */
-    private UCClient(final String remoteAddr, final int remotePort) {
-        this.remoteAddr = remoteAddr;
-        this.remotePort = remotePort;
     }
 
     /**
@@ -72,24 +61,27 @@ public class UCClient {
 
     /**
      * Alternative static init method of UCClient with
-     * server address & port number.
+     * server address & port number. If <code>bufferSize
+     * == -1</code>, default size 1024 will be used for
+     * the size of the buffer.
      *
      * @param remoteAddr IPv4 address of the server
      * @param remotePort port number of the server
+     * @param bufferSize size of the buffer for
+     *                   message receive from server
      * @return instance of UCClient with
      * parameters set
      */
-    public static UCClient init(final String remoteAddr,
-                                final int remotePort) {
+    public static UCClient init(final String remoteAddr, final int remotePort,
+                                final int bufferSize)
+            throws IOException {
 
         init();
 
-        instance.remoteAddr = remoteAddr;
-        instance.remotePort = remotePort;
+        if (bufferSize != -1)
+            instance.bufferSize = bufferSize;
 
-        instance.socket = ClientSocket.init(remoteAddr, remotePort);
-        instance.socket.setOnConnectionCreatedListener(
-                () -> instance.playerRegister());
+        instance.connect(remoteAddr, remotePort);
 
         return instance;
     }
@@ -103,52 +95,164 @@ public class UCClient {
     }
 
     /**
-     * Connects to socket server.
+     * Connects to the server with host's IP address
+     * and port number provided.
      *
-     * @param player name of the player.
+     * @param remoteAddr host's IP address.
+     * @param remotePort port number
+     * @throws IOException if an I/O error occurs when
+     *                     connecting to the server
      */
-    public void connect(String player) {
+    public void connect(final String remoteAddr, final int remotePort)
+            throws IOException {
+        if (!isRunning) {
+            isRunning = true;
 
-        this.player = player;
+            this.remoteAddr = remoteAddr;
+            this.remotePort = remotePort;
 
-        try {
-            socket.connect();
-        } catch (IOException ex) {
-            // Todo - create connection fail listener
+            try {
+                socket = ClientSocket.init(remoteAddr, remotePort);
+                socket.setOnConnectionCreatedListener(this::onConnected);
+                socket.setOnReadStringCompleteListener(this::onMsgReceived);
+                socket.connect();
+            } catch (IOException ex) {
+                isRunning = false;
+
+                throw ex;
+            }
         }
     }
 
+
     /**
-     * Deregisters the player from server and closes
+     * Deregister the player from server and closes
      * the connection.
      */
     public void disconnect() {
         try {
-            socket.writeString(TAG_DEREGISTER + player + DELIMITER,
-                    null);
             socket.disconnect();
         } catch (IOException ex) {
-
+            System.err.println(ex.getMessage());
+            disconnect();
+        } finally {
+            isRunning = false;
         }
+    }
+
+    /* Commands */
+
+    /**
+     * Register a new player to server.
+     *
+     * @param playerName name of the player
+     * @throws PlayerRegisteredException if a player has already
+     *                                   been registered from
+     *                                   this device
+     */
+    public void register(String playerName) throws PlayerRegisteredException {
+        if (playerId == -1) {
+            player = playerName;
+            String cmd = UCCommand.registerCmd(playerName);
+
+            sendCmd(cmd);
+        } else throw new PlayerRegisteredException();
+    }
+
+    /**
+     * Deregister the player from server.
+     *
+     * @throws PlayerNotRegisteredException if there is no
+     *                                      player ID received
+     *                                      from the server yet
+     */
+    public void deregister() throws PlayerNotRegisteredException {
+        if (playerId != -1) {
+            String cmd = UCCommand.deregisterCmd(playerId);
+            sendCmd(cmd);
+        } else throw new PlayerNotRegisteredException();
     }
 
     /**
      * Sends a key down action to the server.
      *
-     * @param key identifier of the key/button
+     * @param key   identifier of the key/button
+     * @param extra optional extra content
+     * @throws PlayerNotRegisteredException if there is no
+     *                                      player ID received
+     *                                      from the server yet
      */
-    public void keyDown(String key) {
+    public void keyDown(String key, @Nullable String extra)
+            throws PlayerNotRegisteredException {
 
-        StringBuilder msg = new StringBuilder();
-        msg.append(TAG_PLAYER).append(player).append(SEPARATOR);
-        msg.append(TAG_KEYDOWN).append(key);
-        msg.append(DELIMITER);
+        if (playerId != -1) {
+            String cmd;
 
-        try {
-            socket.writeString(msg.toString(), null);
-        } catch (IOException ioe) {
+            if (extra != null)
+                cmd = UCCommand.keyDownCmd(
+                        playerId, new String[]{
+                                key, extra.replace(UCCommand.SEPRARTOR,
+                                "")
+                        }
+                );
+            else cmd = UCCommand.keyDownCmd(playerId, new String[]{key});
 
+            sendCmd(cmd);
+        } else {
+            throw new PlayerNotRegisteredException();
         }
+    }
+
+    /**
+     * Sends a joystick command to the server. Value x & y
+     * must be smaller or equal 1.0f and larger or equal -1.0f.
+     *
+     * @param x x location of the joystick
+     * @param y y location of the joystick
+     * @throws PlayerNotRegisteredException if there is no
+     *                                      player ID received
+     *                                      from the server yet
+     */
+    public void joystick(float x, float y) throws PlayerNotRegisteredException {
+        if (playerId != -1) {
+            if (x <= -1.0f || x >= 1.0f
+                    || y <= -1.0f || y >= 1.0f)
+                illegalFloatValue();
+            else {
+                String cmd = UCCommand.joystickCmd(playerId, x, y);
+                sendCmd(cmd);
+            }
+        } else throw new PlayerNotRegisteredException();
+    }
+
+    /**
+     * Sends a gyro command to the server. Value x, y & z
+     * must be smaller or equal 1.0f and larger or equal -1.0f.
+     *
+     * @param x x value of the gyro
+     * @param y y value of the gyro
+     * @param z z value of the gyro
+     * @throws PlayerNotRegisteredException if there is no
+     *                                      player ID received
+     *                                      from the server yet
+     */
+    public void gyro(float x, float y, float z)
+            throws PlayerNotRegisteredException {
+        if (playerId != -1) {
+            String cmd = UCCommand.gyroCmd(playerId, x, y, z);
+            sendCmd(cmd);
+        } else throw new PlayerNotRegisteredException();
+    }
+
+    /* Setters */
+
+    /**
+     * Set the listener/callback for the client.
+     *
+     * @param listener an instance of <code>IUCCallbacks</code>
+     */
+    public void seetOnServerShuttedDownListener(IUCCallbacks listener) {
+        callback = listener;
     }
 
     /* Getters */
@@ -174,17 +278,78 @@ public class UCClient {
         return remotePort;
     }
 
+    public String getPlayerName() {
+        return player;
+    }
+
+    public int geetPlayerId() {
+        return playerId;
+    }
+
     /* Private methods */
 
-    /**
-     * Register the player to server.
-     */
-    private void playerRegister() {
-        try {
-            socket.writeString(TAG_REGISTER + player + DELIMITER,
-                    null);
-        } catch (IOException ex) {
-
+    private void onConnected() {
+        while (isRunning) {
+            try {
+                socket.readString(bufferSize, UCCommand.DELIMITER);
+            } catch (IOException ex) {
+                disconnect();
+            }
         }
+    }
+
+    private void onMsgReceived(String msg) {
+        String[] decodedString = msg.split(UCCommand.SEPRARTOR);
+
+        switch (decodedString.length) {
+            case 1:
+                switch (decodedString[0]) {
+                    case UCCommand.SERVER_FULL:
+                        callback.onServerFull();
+                        disconnect();
+                        break;
+                    case UCCommand.SERVER_SHUTDOWN:
+                        callback.onServerDisconnected();
+                        break;
+                    case UCCommand.PLAYER_NOT_FOUND:
+                        callback.onPlayerNotFound();
+                        break;
+                    case UCCommand.INVALID_CMD:
+                        callback.invalidCmd();
+                        break;
+                    default:
+                        onInvalidMsgReceived();
+                }
+            case 2:
+                if (decodedString[0].equals(UCCommand.PLAYER_ID)) {
+                    // Player ID received from server
+                    playerId = Integer.parseInt(decodedString[1]);
+                    callback.onPlayerRegistered();
+                }
+                break;
+            default:
+                onInvalidMsgReceived();
+        }
+    }
+
+    private void onInvalidMsgReceived() {
+        throw new RuntimeException(
+                "Incorrect message received from server. "
+                        + "Are you connecting to a Universal Controller server?"
+        );
+    }
+
+    private void sendCmd(String cmd) {
+        try {
+            socket.writeString(cmd, null);
+        } catch (IOException ex) {
+            callback.onServerDisconnected();
+        }
+    }
+
+    private void illegalFloatValue() {
+        throw new IllegalArgumentException(
+                "Float value must be >= -1.0f and <= 1.0f."
+        );
     }
 }
