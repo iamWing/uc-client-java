@@ -189,8 +189,12 @@ public class UCClient {
             String cmd;
 
             if (extra != null)
-                cmd = UCCommand.keyDownCmd(playerId,
-                        new String[]{key, extra});
+                cmd = UCCommand.keyDownCmd(
+                        playerId, new String[]{
+                                key, extra.replace(UCCommand.SEPRARTOR,
+                                "")
+                        }
+                );
             else cmd = UCCommand.keyDownCmd(playerId, new String[]{key});
 
             sendCmd(cmd);
