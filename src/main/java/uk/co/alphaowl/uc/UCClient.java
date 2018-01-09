@@ -1,6 +1,7 @@
 package uk.co.alphaowl.uc;
 
 import com.devtography.socket.javadotnet.ClientSocket;
+import com.sun.istack.internal.Nullable;
 
 import java.io.IOException;
 
@@ -16,6 +17,7 @@ public class UCClient {
 
     private String remoteAddr;
     private int remotePort;
+    private int bufferSize = 1024;
 
     private ClientSocket socket;
 
@@ -54,17 +56,26 @@ public class UCClient {
 
     /**
      * Alternative static init method of UCClient with
-     * server address & port number.
+     * server address & port number. If <code>bufferSize
+     *  == -1</code>, default size 1024 will be used for
+     *  the size of the buffer.
      *
      * @param remoteAddr IPv4 address of the server
      * @param remotePort port number of the server
+     * @param bufferSize size of the buffer for
+     *                   message receive from server
+     *
      * @return instance of UCClient with
      * parameters set
      */
-    public static UCClient init(final String remoteAddr,
-                                final int remotePort) throws IOException {
+    public static UCClient init(final String remoteAddr, final int remotePort,
+                                final int bufferSize)
+            throws IOException {
 
         init();
+
+        if (bufferSize != -1)
+            instance.bufferSize = bufferSize;
 
         instance.connect(remoteAddr, remotePort);
 
