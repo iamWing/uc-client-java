@@ -317,9 +317,11 @@ public class UCClient {
                         onInvalidMsgReceived();
                 }
             case 2:
-                if (decodedString[0].equals(UCCommand.PLAYER_ID))
+                if (decodedString[0].equals(UCCommand.PLAYER_ID)) {
                     // Player ID received from server
                     playerId = Integer.parseInt(decodedString[1]);
+                    callback.onPlayerRegistered();
+                }
                 break;
             default:
                 onInvalidMsgReceived();
