@@ -134,13 +134,14 @@ public class UCClient {
      * the connection.
      */
     public void disconnect() {
+        isRunning = false;
+
         try {
             socket.disconnect();
+            workerThread.interrupt();
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
             disconnect();
-        } finally {
-            isRunning = false;
         }
     }
 
