@@ -160,6 +160,20 @@ public class UCClient {
     }
 
     /**
+     * Deregister the player from server.
+     *
+     * @throws PlayerNotRegisteredException if there is no
+     *                                      player ID received
+     *                                      from the server yet
+     */
+    public void deregister() throws PlayerNotRegisteredException {
+        if (playerId != -1) {
+            String cmd = UCCommand.deregisterCmd(playerId);
+            sendCmd(cmd);
+        } else throw new PlayerNotRegisteredException();
+    }
+
+    /**
      * Sends a key down action to the server.
      *
      * @param key   identifier of the key/button
