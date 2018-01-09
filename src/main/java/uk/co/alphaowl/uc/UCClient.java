@@ -200,7 +200,8 @@ public class UCClient {
             case 1:
                 switch (decodedString[0]) {
                     case UCCommand.SERVER_SHUTDOWN:
-
+                        callback.onServerShuttedDown();
+                        break;
                     case UCCommand.PLAYER_NOT_FOUND:
                     case UCCommand.INVALID_CMD:
                 }
