@@ -300,6 +300,10 @@ public class UCClient {
         switch (decodedString.length) {
             case 1:
                 switch (decodedString[0]) {
+                    case UCCommand.SERVER_FULL:
+                        callback.onServerFull();
+                        disconnect();
+                        break;
                     case UCCommand.SERVER_SHUTDOWN:
                         callback.onServerDisconnected();
                         break;
