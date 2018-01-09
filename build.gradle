@@ -1,5 +1,5 @@
 group 'uk.co.alphaowl'
-version '0.1.0'
+version 'v1.0.0'
 
 apply plugin: 'java-library'
 
