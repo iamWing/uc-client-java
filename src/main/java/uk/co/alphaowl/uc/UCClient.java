@@ -22,6 +22,7 @@ public class UCClient {
     private ClientSocket socket;
 
     private String player;
+    private int playerId;
 
     /**
      * Default constructor.
@@ -183,6 +184,19 @@ public class UCClient {
     }
 
     private void onMsgReceived(String msg) {
+        String[] decodedString = msg.split(UCCommand.SEPRARTOR);
 
+        switch (decodedString.length) {
+            case 1:
+                switch (decodedString[0]) {
+                    case UCCommand.PLAYER_NOT_FOUND:
+                    case UCCommand.SERVER_SHUTDOWN:
+                    case UCCommand.INVALID_CMD:
+                }
+            case 2:
+                if (decodedString[0].equals(UCCommand.PLAYER_ID))
+                    // Player ID received from server
+                break;
+        }
     }
 }
