@@ -23,7 +23,7 @@ public class UCClient {
 
     private ClientSocket socket;
 
-    private IUCCallbacks callback;
+    private IUCCallback callback;
 
     private String player;
     private int playerId = -1;
@@ -73,13 +73,15 @@ public class UCClient {
      * parameters set
      */
     public static UCClient init(final String remoteAddr, final int remotePort,
-                                final int bufferSize)
+                                final int bufferSize, IUCCallback callback)
             throws IOException {
 
         init();
 
         if (bufferSize != -1)
             instance.bufferSize = bufferSize;
+
+        instance.callback = callback;
 
         instance.connect(remoteAddr, remotePort);
 
@@ -249,9 +251,9 @@ public class UCClient {
     /**
      * Set the listener/callback for the client.
      *
-     * @param listener an instance of <code>IUCCallbacks</code>
+     * @param listener an instance of <code>IUCCallback</code>
      */
-    public void seetOnServerShuttedDownListener(IUCCallbacks listener) {
+    public void setCallback(IUCCallback listener) {
         callback = listener;
     }
 
