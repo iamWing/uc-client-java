@@ -199,6 +199,28 @@ public class UCClient {
         }
     }
 
+    /**
+     * Sends a joystick command to the server. Value x & y
+     * must be smaller or equal 1.0f and larger or equal -1.0f.
+     *
+     * @param x x location of the joystick
+     * @param y y location of the joystick
+     * @throws PlayerNotRegisteredException if there is no
+     *                                      player ID received
+     *                                      from the server yet
+     */
+    public void joystick(float x, float y) throws PlayerNotRegisteredException {
+        if (playerId != -1) {
+            if (x <= -1.0f || x >= 1.0f
+                    || y <= -1.0f || y >= 1.0f)
+                illegalFloatValue();
+            else {
+                String cmd = UCCommand.joystickCmd(playerId, x, y);
+                sendCmd(cmd);
+            }
+        } else throw new PlayerNotRegisteredException();
+    }
+
     /* Setters */
 
     /**
@@ -294,5 +316,11 @@ public class UCClient {
         } catch (IOException ex) {
             callback.onServerDisconnected();
         }
+    }
+
+    private void illegalFloatValue() {
+        throw new IllegalArgumentException(
+                "Float value must be >= -1.0f and <= 1.0f."
+        );
     }
 }
