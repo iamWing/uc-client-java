@@ -1,5 +1,5 @@
 group 'uk.co.alphaowl'
-version '0.1'
+version 'v1.0.0'
 
 apply plugin: 'java-library'
 
@@ -10,5 +10,15 @@ repositories {
 }
 
 dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'org.jetbrains:annotations:15.0'
     testCompile 'junit:junit:4.12'
 }
+
+jar {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                'Implementation-Version': project.version)
+    }
+}
+
