@@ -59,7 +59,7 @@ abstract class UCCommand {
     /**
      * @return Returns a valid string of gyro command.
      */
-    static String gyoCmd(int playerId, float x, float y, float z) {
+    static String gyroCmd(int playerId, float x, float y, float z) {
 
         return playerId + GYRO + x + SEPRARTOR + y + SEPRARTOR + z;
     }

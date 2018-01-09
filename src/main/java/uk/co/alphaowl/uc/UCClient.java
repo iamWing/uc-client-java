@@ -221,6 +221,25 @@ public class UCClient {
         } else throw new PlayerNotRegisteredException();
     }
 
+    /**
+     * Sends a gyro command to the server. Value x, y & z
+     * must be smaller or equal 1.0f and larger or equal -1.0f.
+     *
+     * @param x x value of the gyro
+     * @param y y value of the gyro
+     * @param z z value of the gyro
+     * @throws PlayerNotRegisteredException if there is no
+     *                                      player ID received
+     *                                      from the server yet
+     */
+    public void gyro(float x, float y, float z)
+            throws PlayerNotRegisteredException {
+        if (playerId != -1) {
+            String cmd = UCCommand.gyroCmd(playerId, x, y, z);
+            sendCmd(cmd);
+        } else throw new PlayerNotRegisteredException();
+    }
+
     /* Setters */
 
     /**
