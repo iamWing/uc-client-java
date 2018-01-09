@@ -13,7 +13,7 @@ public class UCClient {
 
     private static volatile UCClient instance;
 
-    private boolean isRunning = false;
+    private volatile boolean isRunning = false;
 
     private String remoteAddr;
     private int remotePort;
@@ -57,14 +57,13 @@ public class UCClient {
     /**
      * Alternative static init method of UCClient with
      * server address & port number. If <code>bufferSize
-     *  == -1</code>, default size 1024 will be used for
-     *  the size of the buffer.
+     * == -1</code>, default size 1024 will be used for
+     * the size of the buffer.
      *
      * @param remoteAddr IPv4 address of the server
      * @param remotePort port number of the server
      * @param bufferSize size of the buffer for
      *                   message receive from server
-     *
      * @return instance of UCClient with
      * parameters set
      */
@@ -125,11 +124,15 @@ public class UCClient {
      * Deregister the player from server and closes
      * the connection.
      */
-    public void disconnect() throws IOException {
-
-        socket.disconnect();
-
-        isRunning = false;
+    public void disconnect() {
+        try {
+            socket.disconnect();
+        } catch (IOException ex) {
+            System.err.println(ex.getMessage());
+            disconnect();
+        } finally {
+            isRunning = false;
+        }
     }
 
     /**
@@ -170,7 +173,13 @@ public class UCClient {
     /* Private methods */
 
     private void onConnected() {
-
+        while (isRunning) {
+            try {
+                socket.readString(bufferSize, UCCommand.DELIMITER);
+            } catch (IOException ex) {
+                disconnect();
+            }
+        }
     }
 
     private void onMsgReceived(String msg) {
