@@ -182,6 +182,14 @@ public class UCClient {
         return remotePort;
     }
 
+    public String getPlayerName() {
+        return player;
+    }
+
+    public int geetPlayerId() {
+        return playerId;
+    }
+
     /* Private methods */
 
     private void onConnected() {
