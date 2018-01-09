@@ -1,7 +1,7 @@
 package uk.co.alphaowl.uc;
 
 import com.devtography.socket.javadotnet.ClientSocket;
-import com.sun.istack.internal.Nullable;
+import org.jetbrains.annotations.Nullable;
 import uk.co.alphaowl.uc.exceptions.PlayerNotRegisteredException;
 
 import java.io.IOException;
