@@ -28,18 +28,6 @@ public class UCClient {
     }
 
     /**
-     * Constructor with predefine server IP address &
-     * port number.
-     *
-     * @param remoteAddr IPv4 address of the server
-     * @param remotePort port number of the server
-     */
-    private UCClient(final String remoteAddr, final int remotePort) {
-        this.remoteAddr = remoteAddr;
-        this.remotePort = remotePort;
-    }
-
-    /**
      * Static initialisation method of UCClient. This
      * is the default method to initial an new instance.
      *
