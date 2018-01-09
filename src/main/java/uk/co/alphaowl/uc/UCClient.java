@@ -140,6 +140,7 @@ public class UCClient {
 
     /**
      * Set the listener/callback for the client.
+     *
      * @param listener an instance of <code>IUCCallbacks</code>
      */
     public void seetOnServerShuttedDownListener(IUCCallbacks listener) {
@@ -203,13 +204,28 @@ public class UCClient {
                         callback.onServerShuttedDown();
                         break;
                     case UCCommand.PLAYER_NOT_FOUND:
+                        callback.onPlayerNotFound();
+                        break;
                     case UCCommand.INVALID_CMD:
+                        callback.invalidCmd();
+                        break;
+                    default:
+                        invalidMsgReceived();
                 }
             case 2:
                 if (decodedString[0].equals(UCCommand.PLAYER_ID))
                     // Player ID received from server
                     playerId = Integer.parseInt(decodedString[1]);
                 break;
+            default:
+                invalidMsgReceived();
         }
+    }
+
+    private void invalidMsgReceived() {
+        throw new RuntimeException(
+                "Incorrect message received from server. "
+                        + "Are you connecting to a Universal Controller server?"
+        );
     }
 }
