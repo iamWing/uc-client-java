@@ -73,7 +73,7 @@ public class UCClient {
      * parameters set
      */
     public static UCClient init(final String remoteAddr, final int remotePort,
-                                final int bufferSize, IUCCallbacks callback)
+                                final int bufferSize, IUCCallback callback)
             throws IOException {
 
         init();
