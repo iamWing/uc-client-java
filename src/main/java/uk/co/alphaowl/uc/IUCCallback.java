@@ -1,6 +1,6 @@
 package uk.co.alphaowl.uc;
 
-public interface IUCCallbacks {
+public interface IUCCallback {
     void onPlayerRegistered();
     void onServerDisconnected();
     void onPlayerNotFound();
