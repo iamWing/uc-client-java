@@ -3,6 +3,7 @@ package uk.co.alphaowl.uc;
 import com.devtography.socket.javadotnet.ClientSocket;
 import org.jetbrains.annotations.Nullable;
 import uk.co.alphaowl.uc.exceptions.PlayerNotRegisteredException;
+import uk.co.alphaowl.uc.exceptions.PlayerRegisteredException;
 
 import java.io.IOException;
 
@@ -139,13 +140,23 @@ public class UCClient {
         }
     }
 
+    /* Commands */
+
     /**
-     * Set the listener/callback for the client.
+     * Register a new player to server.
      *
-     * @param listener an instance of <code>IUCCallbacks</code>
+     * @param playerName name of the player
+     * @throws PlayerRegisteredException if a player has already
+     *                                   been registered from
+     *                                   this device
      */
-    public void seetOnServerShuttedDownListener(IUCCallbacks listener) {
-        callback = listener;
+    public void register(String playerName) throws PlayerRegisteredException {
+        if (playerId == -1) {
+            player = playerName;
+            String cmd = UCCommand.registerCmd(playerName);
+
+            sendCmd(cmd);
+        } else throw new PlayerRegisteredException();
     }
 
     /**
@@ -154,7 +165,8 @@ public class UCClient {
      * @param key   identifier of the key/button
      * @param extra optional extra content
      * @throws PlayerNotRegisteredException if there is no
-     *                                      player ID received from the server yet.
+     *                                      player ID received
+     *                                      from the server yet
      */
     public void keyDown(String key, @Nullable String extra)
             throws PlayerNotRegisteredException {
@@ -167,14 +179,21 @@ public class UCClient {
                         new String[]{key, extra});
             else cmd = UCCommand.keyDownCmd(playerId, new String[]{key});
 
-            try {
-                socket.writeString(cmd, null);
-            } catch (IOException ex) {
-                callback.onServerDisconnected();
-            }
+            sendCmd(cmd);
         } else {
             throw new PlayerNotRegisteredException();
         }
+    }
+
+    /* Setters */
+
+    /**
+     * Set the listener/callback for the client.
+     *
+     * @param listener an instance of <code>IUCCallbacks</code>
+     */
+    public void seetOnServerShuttedDownListener(IUCCallbacks listener) {
+        callback = listener;
     }
 
     /* Getters */
@@ -236,7 +255,7 @@ public class UCClient {
                         callback.invalidCmd();
                         break;
                     default:
-                        invalidMsgReceived();
+                        onInvalidMsgReceived();
                 }
             case 2:
                 if (decodedString[0].equals(UCCommand.PLAYER_ID))
@@ -244,14 +263,22 @@ public class UCClient {
                     playerId = Integer.parseInt(decodedString[1]);
                 break;
             default:
-                invalidMsgReceived();
+                onInvalidMsgReceived();
         }
     }
 
-    private void invalidMsgReceived() {
+    private void onInvalidMsgReceived() {
         throw new RuntimeException(
                 "Incorrect message received from server. "
                         + "Are you connecting to a Universal Controller server?"
         );
+    }
+
+    private void sendCmd(String cmd) {
+        try {
+            socket.writeString(cmd, null);
+        } catch (IOException ex) {
+            callback.onServerDisconnected();
+        }
     }
 }
