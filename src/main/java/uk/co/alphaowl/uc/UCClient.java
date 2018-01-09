@@ -21,6 +21,8 @@ public class UCClient {
 
     private ClientSocket socket;
 
+    private IUCCallbacks callback;
+
     private String player;
     private int playerId;
 
@@ -95,9 +97,9 @@ public class UCClient {
      * and port number provided.
      *
      * @param remoteAddr host's IP address.
-     * @param remotePort port number.
+     * @param remotePort port number
      * @throws IOException if an I/O error occurs when
-     *                     connecting to the server.
+     *                     connecting to the server
      */
     public void connect(final String remoteAddr, final int remotePort)
             throws IOException {
@@ -134,6 +136,14 @@ public class UCClient {
         } finally {
             isRunning = false;
         }
+    }
+
+    /**
+     * Set the listener/callback for the client.
+     * @param listener an instance of <code>IUCCallbacks</code>
+     */
+    public void seetOnServerShuttedDownListener(IUCCallbacks listener) {
+        callback = listener;
     }
 
     /**
@@ -189,14 +199,15 @@ public class UCClient {
         switch (decodedString.length) {
             case 1:
                 switch (decodedString[0]) {
-                    case UCCommand.PLAYER_NOT_FOUND:
                     case UCCommand.SERVER_SHUTDOWN:
+
+                    case UCCommand.PLAYER_NOT_FOUND:
                     case UCCommand.INVALID_CMD:
                 }
             case 2:
                 if (decodedString[0].equals(UCCommand.PLAYER_ID))
                     // Player ID received from server
-                    playerId = Integer.parseInt(decodedString[1];
+                    playerId = Integer.parseInt(decodedString[1]);
                 break;
         }
     }
