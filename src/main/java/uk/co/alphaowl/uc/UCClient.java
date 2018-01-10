@@ -17,13 +17,15 @@ public class UCClient {
 
     private volatile boolean isRunning = false;
 
+    private IUCCallback callback;
+
+    private Thread workerThread;
+
     private String remoteAddr;
     private int remotePort;
     private int bufferSize = 1024;
 
     private ClientSocket socket;
-
-    private IUCCallback callback;
 
     private String player;
     private int playerId = -1;
@@ -132,13 +134,14 @@ public class UCClient {
      * the connection.
      */
     public void disconnect() {
+        isRunning = false;
+
         try {
             socket.disconnect();
+            workerThread.interrupt();
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
             disconnect();
-        } finally {
-            isRunning = false;
         }
     }
 
@@ -291,13 +294,16 @@ public class UCClient {
     /* Private methods */
 
     private void onConnected() {
-        while (isRunning) {
-            try {
-                socket.readString(bufferSize, UCCommand.DELIMITER);
-            } catch (IOException ex) {
-                disconnect();
+        workerThread = new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted() && isRunning) {
+                try {
+                    socket.readString(bufferSize, UCCommand.DELIMITER);
+                } catch (IOException ex) {
+                    disconnect();
+                }
             }
-        }
+        });
+        workerThread.start();
     }
 
     private void onMsgReceived(String msg) {
