@@ -24,7 +24,7 @@ abstract class UCCommand {
      */
     static String registerCmd(String playerName) {
 
-        return REGISTER + playerName.replace(SEPRARTOR, "");
+        return REGISTER + playerName.replace(SEPRARTOR, "") + DELIMITER;
     }
 
     /**
@@ -32,7 +32,7 @@ abstract class UCCommand {
      */
     static String deregisterCmd(int playerId) {
 
-        return DEREGISTER + playerId;
+        return DEREGISTER + playerId + DELIMITER;
     }
 
     static String keyDownCmd(int playerId, String[] data) {
@@ -45,7 +45,7 @@ abstract class UCCommand {
                 cmd += SEPRARTOR;
         }
 
-        return cmd;
+        return cmd + DELIMITER;
     }
 
     /**
@@ -53,7 +53,7 @@ abstract class UCCommand {
      */
     static String joystickCmd(int playerId, float x, float y) {
         
-        return playerId + JOYSTICK + x + SEPRARTOR + y;
+        return playerId + JOYSTICK + x + SEPRARTOR + y + DELIMITER;
     }
 
     /**
@@ -61,6 +61,6 @@ abstract class UCCommand {
      */
     static String gyroCmd(int playerId, float x, float y, float z) {
 
-        return playerId + GYRO + x + SEPRARTOR + y + SEPRARTOR + z;
+        return playerId + GYRO + x + SEPRARTOR + y + SEPRARTOR + z + DELIMITER;
     }
 }
